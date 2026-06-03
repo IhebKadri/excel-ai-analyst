@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "db:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +14,7 @@
   "description": "",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
-    "@prisma/client": "^7.8.0",
+    "@prisma/client": "^6.16.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -21,6 +22,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
     "multer": "^2.1.1",
+    "prisma": "^6.16.2",
     "uuid": "^14.0.0",
     "xlsx": "^0.18.5",
     "zod": "^4.4.3"
@@ -34,7 +36,7 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^25.9.1",
     "@types/uuid": "^10.0.0",
-    "prisma": "^7.8.0",
+    "dotenv-cli": "^11.0.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3"
   }

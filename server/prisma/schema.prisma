@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  files        File[]
+  reports      Report[]
+
+  @@map("users")
+}
+
+model File {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  originalName String   @map("original_name")
+  storagePath  String   @map("storage_path")
+  mimeType     String   @map("mime_type")
+  sizeBytes    Int      @map("size_bytes")
+  uploadedAt   DateTime @default(now()) @map("uploaded_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports      Report[]
+
+  @@map("files")
+}
+
+model Report {
+  id        String   @id @default(uuid())
+  fileId    String   @map("file_id")
+  userId    String   @map("user_id")
+  summary   String
+  insights  Json     @default("[]")
+  status    String   @default("ready")
+  createdAt DateTime @default(now()) @map("created_at")
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
