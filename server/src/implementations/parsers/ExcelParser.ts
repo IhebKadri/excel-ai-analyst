@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { IFileParser, ParsedSheet } from '../../interfaces/IFileParser';
+import { detectTables } from '../../utils/sheetUtils';
 
 export class ExcelParser implements IFileParser {
   private readonly SUPPORTED_MIME_TYPES = [
@@ -16,17 +17,16 @@ export class ExcelParser implements IFileParser {
 
     return workbook.SheetNames.map((sheetName) => {
       const worksheet = workbook.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
+      const raw = XLSX.utils.sheet_to_json<unknown[]>(worksheet, {
+        header: 1,
         defval: null,
       });
-      const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
 
-      return {
-        sheetName,
-        headers,
-        rows,
-        totalRows: rows.length,
-      };
+      const tables = detectTables(raw);
+      const rows = tables.flatMap((t) => t.rows);
+      const headers = [...new Set(tables.flatMap((t) => t.headers))];
+
+      return { sheetName, headers, rows, totalRows: rows.length };
     });
   }
 }
