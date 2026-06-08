@@ -11,7 +11,7 @@ export const env = {
   port: Number(process.env.PORT) || 4000,
   nodeEnv: process.env.NODE_ENV || "development",
   jwtSecret: requireEnv("JWT_SECRET"),
-  anthropicApiKey: requireEnv("ANTHROPIC_API_KEY"),
+  geminiApiKey: requireEnv("GEMINI_API_KEY"),
   databaseUrl: requireEnv("DATABASE_URL"),
   uploadDir: process.env.UPLOAD_DIR || "uploads",
   maxFileSizeMb: Number(process.env.MAX_FILE_SIZE_MB) || 10,

@@ -3,3 +3,5 @@ dist/
 .env
 *.xlsx
 uploads/
+test-parser.ts
+test.xlsx
