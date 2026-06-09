@@ -92,8 +92,8 @@ excel-copilot/
 ### 1. Clone the repo
  
 ```bash
-git clone https://github.com/yourusername/excel-copilot.git
-cd excel-copilot
+git clone https://github.com/IhebKadri/excel-ai-analyst.git
+cd excel-ai-analyst
 ```
  
 ### 2. Start the database
