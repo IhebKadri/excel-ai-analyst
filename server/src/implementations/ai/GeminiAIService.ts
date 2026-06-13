@@ -1,16 +1,24 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { IAIService, ChatMessage, AIResponse } from '../../interfaces/IAIService';
-import { env } from '../../config/env';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  IAIService,
+  ChatMessage,
+  AIResponse,
+} from "../../interfaces/IAIService";
+import { env } from "../../config/env";
 
 export class GeminiAIService implements IAIService {
   private readonly client: GoogleGenerativeAI;
-  private readonly model = 'gemini-1.5-flash';
+  private readonly model = "gemini-2.5-flash";
 
   constructor() {
     this.client = new GoogleGenerativeAI(env.geminiApiKey);
   }
 
-  async ask(prompt: string, context: string, history: ChatMessage[] = []): Promise<AIResponse> {
+  async ask(
+    prompt: string,
+    context: string,
+    history: ChatMessage[] = [],
+  ): Promise<AIResponse> {
     const model = this.client.getGenerativeModel({
       model: this.model,
       systemInstruction: this.buildSystemPrompt(context),
@@ -18,7 +26,7 @@ export class GeminiAIService implements IAIService {
 
     const chat = model.startChat({
       history: history.map((msg) => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
+        role: msg.role === "assistant" ? "model" : "user",
         parts: [{ text: msg.content }],
       })),
     });
@@ -39,7 +47,7 @@ for a small business owner. Focus on totals, trends, and anything unusual.
 Be direct and use numbers wherever possible.
 
 Data:
-${data}`
+${data}`,
     );
 
     return result.response.text();
@@ -53,12 +61,12 @@ ${data}`
 Each insight should be one sentence. Return 3-5 insights. No explanation, just the JSON array.
 
 Data:
-${data}`
+${data}`,
     );
 
     const text = result.response.text().trim();
     try {
-      const clean = text.replace(/```json|```/g, '').trim();
+      const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
       return Array.isArray(parsed) ? parsed : [];
     } catch {
