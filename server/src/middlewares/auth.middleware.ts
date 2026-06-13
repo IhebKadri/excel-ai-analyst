@@ -13,10 +13,9 @@ declare global {
 }
 
 export function authMiddleware(req: Request, _res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) return next(ApiError.unauthorized());
+  const token = req.cookies?.token;
+  if (!token) return next(ApiError.unauthorized());
 
-  const token = header.slice(7);
   try {
     const payload = jwt.verify(token, env.jwtSecret) as AuthTokenPayload;
     req.user = payload;

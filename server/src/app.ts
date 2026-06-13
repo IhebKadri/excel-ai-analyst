@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import fs from "fs";
+import cookieParser from 'cookie-parser';
 
 import { env } from "./config/env";
 import { logger } from "./utils/logger";
@@ -46,6 +47,7 @@ const app = express();
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/auth", createAuthRouter(authController));
 app.use("/api/files", createFileRouter(fileController));
