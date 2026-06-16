@@ -38,7 +38,7 @@ export class GeminiAIService implements IAIService {
     return { answer, tokensUsed };
   }
 
-  async summarize(data: string): Promise<string> {
+  async summarize(data: string): Promise<{ text: string; tokensUsed: number }> {
     const model = this.client.getGenerativeModel({ model: this.model });
 
     const result = await model.generateContent(
@@ -50,10 +50,15 @@ Data:
 ${data}`,
     );
 
-    return result.response.text();
+    return {
+      text: result.response.text(),
+      tokensUsed: result.response.usageMetadata?.totalTokenCount ?? 0,
+    };
   }
 
-  async extractInsights(data: string): Promise<string[]> {
+  async extractInsights(
+    data: string,
+  ): Promise<{ insights: string[]; tokensUsed: number }> {
     const model = this.client.getGenerativeModel({ model: this.model });
 
     const result = await model.generateContent(
@@ -65,12 +70,14 @@ ${data}`,
     );
 
     const text = result.response.text().trim();
+    const tokensUsed = result.response.usageMetadata?.totalTokenCount ?? 0;
+
     try {
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
-      return Array.isArray(parsed) ? parsed : [];
+      return { insights: Array.isArray(parsed) ? parsed : [], tokensUsed };
     } catch {
-      return [text];
+      return { insights: [text], tokensUsed };
     }
   }
 
