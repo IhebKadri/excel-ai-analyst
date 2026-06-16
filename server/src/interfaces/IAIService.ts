@@ -14,6 +14,8 @@ export interface IAIService {
     context: string,
     history?: ChatMessage[],
   ): Promise<AIResponse>;
-  summarize(data: string): Promise<string>;
-  extractInsights(data: string): Promise<string[]>;
+  summarize(data: string): Promise<{ text: string; tokensUsed: number }>;
+  extractInsights(
+    data: string,
+  ): Promise<{ insights: string[]; tokensUsed: number }>;
 }

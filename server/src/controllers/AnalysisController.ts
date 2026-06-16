@@ -5,11 +5,11 @@ import { ApiError } from '../utils/ApiError';
 
 const askSchema = z.object({
   fileId: z.string().uuid('Invalid file ID'),
-  question: z.string().min(3, 'Question too short'),
+  question: z.string().min(3, 'Question too short').max(300, 'Question too long'),
   history: z.array(z.object({
     role: z.enum(['user', 'assistant']),
-    content: z.string(),
-  })).optional().default([]),
+    content: z.string().max(2000, 'Message too long'),
+  })).max(20, 'Too many messages in history').optional().default([]),
 });
 
 export class AnalysisController {

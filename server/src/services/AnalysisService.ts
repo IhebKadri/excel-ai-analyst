@@ -5,7 +5,8 @@ import { IFileRepository } from '../interfaces/IFileRepository';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 
-const MAX_ROWS_IN_CONTEXT = 100;
+const MAX_ROWS_IN_CONTEXT = 50;
+const MAX_HISTORY_MESSAGES = 10;
 
 export class AnalysisService {
   constructor(
@@ -24,12 +25,14 @@ export class AnalysisService {
     if (!file) throw ApiError.notFound(`File not found: ${fileId}`);
     if (file.userId !== userId) throw ApiError.unauthorized();
 
+    const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES);
+
     const buffer = await this.readFile(file.storagePath);
     const sheets = await this.parser.parse(buffer);
     const context = this.buildContext(sheets);
 
     logger.info(`Asking AI about file ${fileId}`, { question });
-    const { answer } = await this.aiService.ask(question, context, history);
+    const { answer } = await this.aiService.ask(question, context, trimmedHistory);
     return answer;
   }
 
@@ -43,12 +46,19 @@ export class AnalysisService {
     const context = this.buildContext(sheets);
 
     logger.info(`Generating report for file ${fileId}`);
-    const [summary, insights] = await Promise.all([
+    const [summaryResult, insightsResult] = await Promise.all([
       this.aiService.summarize(context),
       this.aiService.extractInsights(context),
     ]);
 
-    return { summary, insights };
+    const totalTokens = summaryResult.tokensUsed + insightsResult.tokensUsed;
+    logger.info(`Report generated for file ${fileId}`, { totalTokens });
+
+    return {
+      summary: summaryResult.text,
+      insights: insightsResult.insights,
+      tokensUsed: totalTokens,
+    };
   }
 
   private buildContext(sheets: Awaited<ReturnType<IFileParser['parse']>>): string {
