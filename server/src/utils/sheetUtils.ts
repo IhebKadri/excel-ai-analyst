@@ -13,11 +13,16 @@ export function isHeaderRow(row: unknown[]): boolean {
 export function detectTables(raw: unknown[][]): { headers: string[]; rows: Record<string, unknown>[] }[] {
   const tables: { headers: string[]; rows: Record<string, unknown>[] }[] = [];
   let i = 0;
+  let expectingHeader = true; // only true at the very start, or right after an empty row
 
   while (i < raw.length) {
-    if (isEmptyRow(raw[i])) { i++; continue; }
+    if (isEmptyRow(raw[i])) {
+      expectingHeader = true; // a gap means the next real row could be a new header
+      i++;
+      continue;
+    }
 
-    if (isHeaderRow(raw[i])) {
+    if (expectingHeader && isHeaderRow(raw[i])) {
       const firstNonNull = raw[i].findIndex((cell) => cell !== null && cell !== '');
 
       const headers = raw[i]
@@ -27,9 +32,11 @@ export function detectTables(raw: unknown[][]): { headers: string[]; rows: Recor
 
       const rows: Record<string, unknown>[] = [];
       i++;
+      expectingHeader = false; // we just consumed the header, everything next is data until a gap
 
-      while (i < raw.length && !isEmptyRow(raw[i]) && !isHeaderRow(raw[i])) {
+      while (i < raw.length && !isEmptyRow(raw[i])) {
         const rawRow = raw[i].slice(firstNonNull);
+
         if (rawRow.every((cell) => cell === null || cell === '')) {
           i++;
           continue;
@@ -45,6 +52,7 @@ export function detectTables(raw: unknown[][]): { headers: string[]; rows: Recor
       continue;
     }
 
+    // Not expecting a header and this isn't an empty row — treat as stray/unparseable, skip it
     i++;
   }
 
