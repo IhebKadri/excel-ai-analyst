@@ -1,5 +1,6 @@
 import { UploadZone } from '../features/upload/components/UploadZone';
 import { FileList } from '../features/files/components/FileList';
+import { ChatWindow } from '../features/chat/components/ChatWindow';
 import { useAppStore } from '../store/appStore';
 
 export function DashboardPage() {
@@ -22,10 +23,7 @@ export function DashboardPage() {
 
           <div className="col-span-2">
             {selectedFile ? (
-              <div className="bg-white rounded-xl border p-6">
-                <p className="text-sm text-gray-500">Selected: {selectedFile.originalName}</p>
-                <p className="text-xs text-gray-400 mt-1">Chat and reports coming in the next commits</p>
-              </div>
+              <ChatWindow fileId={selectedFile.id} />
             ) : (
               <div className="bg-white rounded-xl border p-6 text-center text-gray-400 text-sm">
                 Select a file to start analyzing
