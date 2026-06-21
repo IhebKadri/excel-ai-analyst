@@ -28,7 +28,7 @@ model File {
   uploadedAt   DateTime @default(now()) @map("uploaded_at")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports      Report[]
-
+  @@unique([userId, originalName])
   @@map("files")
 }
 
