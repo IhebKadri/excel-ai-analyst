@@ -1,9 +1,8 @@
 import fs from 'fs/promises';
+import 'multer';
 import { IFileParser } from '../interfaces/IFileParser';
 import { IFileRepository } from '../interfaces/IFileRepository';
 import { ApiError } from '../utils/ApiError';
-import { env } from '../config/env';
-import 'multer';
 
 export class FileService {
   constructor(
@@ -15,6 +14,12 @@ export class FileService {
     if (!this.parser.supports(file.mimetype)) {
       await fs.unlink(file.path).catch(() => null);
       throw ApiError.badRequest(`Unsupported file type: ${file.mimetype}`);
+    }
+
+    const existing = await this.fileRepo.findByUserIdAndName(userId, file.originalname);
+    if (existing) {
+      await fs.unlink(existing.storagePath).catch(() => null);
+      await this.fileRepo.delete(existing.id);
     }
 
     const saved = await this.fileRepo.save({

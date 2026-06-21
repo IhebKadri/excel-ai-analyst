@@ -1,6 +1,9 @@
-import { prisma } from '../config/database';
-import { UploadedFile } from '../domain/UploadedFile';
-import { IFileRepository, CreateFileInput } from '../interfaces/IFileRepository';
+import { prisma } from "../config/database";
+import { UploadedFile } from "../domain/UploadedFile";
+import {
+  IFileRepository,
+  CreateFileInput,
+} from "../interfaces/IFileRepository";
 
 export class FileRepository implements IFileRepository {
   async save(input: CreateFileInput): Promise<UploadedFile> {
@@ -16,11 +19,21 @@ export class FileRepository implements IFileRepository {
   async findByUserId(userId: string): Promise<UploadedFile[]> {
     const rows = await prisma.file.findMany({
       where: { userId },
-      orderBy: { uploadedAt: 'desc' },
+      orderBy: { uploadedAt: "desc" },
     });
     return rows.map((r) => this.toDomain(r));
   }
 
+  async findByUserIdAndName(
+    userId: string,
+    originalName: string,
+  ): Promise<UploadedFile | null> {
+    const row = await prisma.file.findUnique({
+      where: { userId_originalName: { userId, originalName } },
+    });
+    return row ? this.toDomain(row) : null;
+  }
+  
   async delete(id: string): Promise<void> {
     await prisma.file.delete({ where: { id } });
   }
