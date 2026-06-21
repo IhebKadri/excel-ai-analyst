@@ -1,7 +1,8 @@
-import { UploadZone } from '../features/upload/components/UploadZone';
-import { FileList } from '../features/files/components/FileList';
-import { ChatWindow } from '../features/chat/components/ChatWindow';
-import { useAppStore } from '../store/appStore';
+import { UploadZone } from "../features/upload/components/UploadZone";
+import { FileList } from "../features/files/components/FileList";
+import { ChatWindow } from "../features/chat/components/ChatWindow";
+import { ReportPanel } from "../features/reports/components/ReportPanel";
+import { useAppStore } from "../store/appStore";
 
 export function DashboardPage() {
   const { selectedFile } = useAppStore();
@@ -21,9 +22,18 @@ export function DashboardPage() {
             <FileList />
           </div>
 
-          <div className="col-span-2">
+          <div className="col-span-2 space-y-6">
             {selectedFile ? (
-              <ChatWindow fileId={selectedFile.id} />
+              <>
+                <ChatWindow
+                  key={`chat-${selectedFile.id}`}
+                  fileId={selectedFile.id}
+                />
+                <ReportPanel
+                  key={`report-${selectedFile.id}`}
+                  fileId={selectedFile.id}
+                />
+              </>
             ) : (
               <div className="bg-white rounded-xl border p-6 text-center text-gray-400 text-sm">
                 Select a file to start analyzing

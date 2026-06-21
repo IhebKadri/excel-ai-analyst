@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useChat } from '../hooks/useChat';
-import { ChatMessage } from './ChatMessage';
+import { useState } from "react";
+import { useChat } from "../hooks/useChat";
+import { ChatMessage } from "./ChatMessage";
 
 interface Props {
   fileId: string;
@@ -8,18 +8,18 @@ interface Props {
 
 export function ChatWindow({ fileId }: Props) {
   const { messages, send, isLoading, error } = useChat(fileId);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     send(input.trim());
-    setInput('');
+    setInput("");
   };
 
   return (
-    <div className="flex flex-col h-[500px] bg-white rounded-xl border">
-      <div className="flex-1 overflow-y-auto space-y-4 p-4">
+    <div className="flex flex-col h-[500px] bg-white rounded-xl border overflow-hidden">
+      <div className="flex-1 overflow-y-auto space-y-4 p-4 min-h-0">
         {messages.length === 0 && (
           <p className="text-gray-400 text-center pt-8 text-sm">
             Ask anything about your spreadsheet...
