@@ -14,6 +14,7 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   files        File[]
   reports      Report[]
+  chunks       Chunk[]
 
   @@map("users")
 }
@@ -28,6 +29,8 @@ model File {
   uploadedAt   DateTime @default(now()) @map("uploaded_at")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   reports      Report[]
+  chunks       Chunk[]
+
   @@unique([userId, originalName])
   @@map("files")
 }
@@ -44,4 +47,18 @@ model Report {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reports")
+}
+
+model Chunk {
+  id         String                       @id @default(uuid())
+  fileId     String                       @map("file_id")
+  userId     String                       @map("user_id")
+  content    String
+  embedding  Unsupported("vector(3072)")?
+  chunkIndex Int                          @map("chunk_index")
+  createdAt  DateTime                     @default(now()) @map("created_at")
+  file       File                         @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  user       User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chunks")
 }
