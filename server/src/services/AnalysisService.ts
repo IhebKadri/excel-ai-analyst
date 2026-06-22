@@ -2,17 +2,23 @@ import fs from 'fs/promises';
 import { IFileParser } from '../interfaces/IFileParser';
 import { IAIService, ChatMessage } from '../interfaces/IAIService';
 import { IFileRepository } from '../interfaces/IFileRepository';
+import { IEmbeddingService } from '../interfaces/IEmbeddingService';
+import { IChunkRepository } from '../interfaces/IChunkRepository';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 
 const MAX_ROWS_IN_CONTEXT = 50;
 const MAX_HISTORY_MESSAGES = 10;
+const TOP_K_CHUNKS = 5;
+const MIN_SIMILARITY = 0.5;
 
 export class AnalysisService {
   constructor(
     private readonly parser: IFileParser,
     private readonly aiService: IAIService,
     private readonly fileRepo: IFileRepository,
+    private readonly embeddingService: IEmbeddingService,
+    private readonly chunkRepo: IChunkRepository,
   ) {}
 
   async ask(
@@ -27,11 +33,25 @@ export class AnalysisService {
 
     const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES);
 
-    const buffer = await this.readFile(file.storagePath);
-    const sheets = await this.parser.parse(buffer);
-    const context = this.buildContext(sheets);
+    const questionEmbedding = await this.embeddingService.embed(question);
+    const similarChunks = await this.chunkRepo.findSimilar(fileId, questionEmbedding, TOP_K_CHUNKS);
+    const relevantChunks = similarChunks.filter((c) => c.similarity >= MIN_SIMILARITY);
 
-    logger.info(`Asking AI about file ${fileId}`, { question });
+    let context: string;
+
+    if (relevantChunks.length > 0) {
+      logger.info(`found ${relevantChunks.length} relevant chunks for file ${fileId}`);
+      context = relevantChunks
+        .sort((a, b) => a.chunkIndex - b.chunkIndex)
+        .map((c) => c.content)
+        .join('\n\n---\n\n');
+    } else {
+      logger.info(`no relevant chunks found, falling back to full sheet for file ${fileId}`);
+      const buffer = await this.readFile(file.storagePath);
+      const sheets = await this.parser.parse(buffer);
+      context = this.buildContext(sheets);
+    }
+
     const { answer } = await this.aiService.ask(question, context, trimmedHistory);
     return answer;
   }

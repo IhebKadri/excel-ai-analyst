@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import {
   IAIService,
   ChatMessage,
@@ -7,11 +7,11 @@ import {
 import { env } from "../../config/env";
 
 export class GeminiAIService implements IAIService {
-  private readonly client: GoogleGenerativeAI;
+  private readonly ai: GoogleGenAI;
   private readonly model = "gemini-2.5-flash";
 
   constructor() {
-    this.client = new GoogleGenerativeAI(env.geminiApiKey);
+    this.ai = new GoogleGenAI({ apiKey: env.geminiApiKey });
   }
 
   async ask(
@@ -19,58 +19,55 @@ export class GeminiAIService implements IAIService {
     context: string,
     history: ChatMessage[] = [],
   ): Promise<AIResponse> {
-    const model = this.client.getGenerativeModel({
+    const chat = this.ai.chats.create({
       model: this.model,
-      systemInstruction: this.buildSystemPrompt(context),
-    });
-
-    const chat = model.startChat({
+      config: {
+        systemInstruction: this.buildSystemPrompt(context),
+      },
       history: history.map((msg) => ({
         role: msg.role === "assistant" ? "model" : "user",
         parts: [{ text: msg.content }],
       })),
     });
 
-    const result = await chat.sendMessage(prompt);
-    const answer = result.response.text();
-    const tokensUsed = result.response.usageMetadata?.totalTokenCount ?? 0;
+    const result = await chat.sendMessage({ message: prompt });
+    const answer = result.text ?? "";
+    const tokensUsed = result.usageMetadata?.totalTokenCount ?? 0;
 
     return { answer, tokensUsed };
   }
 
   async summarize(data: string): Promise<{ text: string; tokensUsed: number }> {
-    const model = this.client.getGenerativeModel({ model: this.model });
-
-    const result = await model.generateContent(
-      `You are a financial analyst. Summarize this spreadsheet data in 4-6 bullet points
+    const result = await this.ai.models.generateContent({
+      model: this.model,
+      contents: `You are a financial analyst. Summarize this spreadsheet data in 4-6 bullet points
 for a small business owner. Focus on totals, trends, and anything unusual.
 Be direct and use numbers wherever possible.
 
 Data:
 ${data}`,
-    );
+    });
 
     return {
-      text: result.response.text(),
-      tokensUsed: result.response.usageMetadata?.totalTokenCount ?? 0,
+      text: result.text ?? "",
+      tokensUsed: result.usageMetadata?.totalTokenCount ?? 0,
     };
   }
 
   async extractInsights(
     data: string,
   ): Promise<{ insights: string[]; tokensUsed: number }> {
-    const model = this.client.getGenerativeModel({ model: this.model });
-
-    const result = await model.generateContent(
-      `Analyze this spreadsheet data and return ONLY a JSON array of insight strings.
+    const result = await this.ai.models.generateContent({
+      model: this.model,
+      contents: `Analyze this spreadsheet data and return ONLY a JSON array of insight strings.
 Each insight should be one sentence. Return 3-5 insights. No explanation, just the JSON array.
 
 Data:
 ${data}`,
-    );
+    });
 
-    const text = result.response.text().trim();
-    const tokensUsed = result.response.usageMetadata?.totalTokenCount ?? 0;
+    const text = (result.text ?? "").trim();
+    const tokensUsed = result.usageMetadata?.totalTokenCount ?? 0;
 
     try {
       const clean = text.replace(/```json|```/g, "").trim();
