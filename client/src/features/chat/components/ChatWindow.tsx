@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useChat } from "../hooks/useChat";
-import { ChatMessage } from "./ChatMessage";
+import { useState } from 'react';
+import { useChat } from '../hooks/useChat';
+import { ChatMessage } from './ChatMessage';
 
 interface Props {
   fileId: string;
@@ -8,50 +8,61 @@ interface Props {
 
 export function ChatWindow({ fileId }: Props) {
   const { messages, send, isLoading, error } = useChat(fileId);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     send(input.trim());
-    setInput("");
+    setInput('');
   };
 
   return (
-    <div className="flex flex-col h-[500px] bg-white rounded-xl border overflow-hidden">
-      <div className="flex-1 overflow-y-auto space-y-4 p-4 min-h-0">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Chat</span>
+      </div>
+
+      <div className="min-h-[300px] max-h-[400px] overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && (
-          <p className="text-gray-400 text-center pt-8 text-sm">
-            Ask anything about your spreadsheet...
-          </p>
+          <div className="h-full flex items-center justify-center py-12">
+            <p className="text-xs text-gray-400">Ask anything about this file...</p>
+          </div>
         )}
         {messages.map((msg, i) => (
           <ChatMessage key={i} message={msg} />
         ))}
         {isLoading && (
-          <div className="bg-gray-100 rounded-xl px-4 py-3 text-sm text-gray-500 max-w-[80%]">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex gap-1">
+              <span className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
             Thinking...
           </div>
         )}
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="What was total revenue in Q1?"
-          maxLength={300}
-          className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
-        >
-          Send
-        </button>
-      </form>
+      <div className="px-4 py-3 border-t border-gray-100">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask a question..."
+            maxLength={300}
+            className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+          />
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors"
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
