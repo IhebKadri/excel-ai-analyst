@@ -15,8 +15,8 @@ export function useChat(fileId: string) {
     setError(null);
 
     try {
-      const answer = await analysisApi.ask(fileId, question, messages);
-      setMessages([...nextHistory, { role: 'assistant', content: answer }]);
+      const { answer, ragUsed, chunksFound } = await analysisApi.ask(fileId, question, messages);
+      setMessages([...nextHistory, { role: 'assistant', content: answer, ragUsed, chunksFound }]);
     } catch {
       setError('Failed to get a response. Please try again.');
       setMessages(messages);
